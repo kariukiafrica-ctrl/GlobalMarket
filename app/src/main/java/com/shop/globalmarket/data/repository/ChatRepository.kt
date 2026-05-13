@@ -13,7 +13,13 @@ class ChatRepository {
     private val chatCollection = firestore.collection("chats")
 
     suspend fun sendMessage(message: ChatMessage) {
-        chatCollection.add(message).await()
+        val docRef = chatCollection.document()
+        val messageWithId = message.copy(id = docRef.id)
+        docRef.set(messageWithId).await()
+    }
+
+    suspend fun updateMessageStatus(messageId: String, status: String) {
+        chatCollection.document(messageId).update("status", status).await()
     }
 
     fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = callbackFlow {
@@ -28,7 +34,8 @@ class ChatRepository {
                 }
                 if (snapshot != null) {
                     val messages = snapshot.toObjects(ChatMessage::class.java)
-                    trySend(messages)
+                    // Ensure the list is sorted by timestamp correctly because whereIn can sometimes mess with order if not careful
+                    trySend(messages.sortedBy { it.timestamp })
                 }
             }
         awaitClose { subscription.remove() }

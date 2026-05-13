@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.shop.globalmarket.data.model.ChatMessage
+import com.shop.globalmarket.data.model.MessageType
 import com.shop.globalmarket.data.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,10 +33,35 @@ class ChatViewModel : ViewModel() {
         val message = ChatMessage(
             senderId = senderId,
             receiverId = receiverId,
-            message = text
+            message = text,
+            type = MessageType.TEXT
         )
         viewModelScope.launch {
             repository.sendMessage(message)
+        }
+    }
+
+    fun sendOffer(receiverId: String, productId: String, productName: String, amount: Double) {
+        val senderId = auth.currentUser?.uid ?: return
+        
+        val message = ChatMessage(
+            senderId = senderId,
+            receiverId = receiverId,
+            message = "Sent an offer for $productName",
+            type = MessageType.OFFER,
+            offerAmount = amount,
+            productId = productId,
+            productName = productName,
+            status = "PENDING"
+        )
+        viewModelScope.launch {
+            repository.sendMessage(message)
+        }
+    }
+
+    fun updateOfferStatus(messageId: String, status: String) {
+        viewModelScope.launch {
+            repository.updateMessageStatus(messageId, status)
         }
     }
 }

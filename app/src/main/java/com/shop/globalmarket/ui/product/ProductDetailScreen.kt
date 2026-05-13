@@ -6,11 +6,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.shop.globalmarket.data.model.Product
 import com.shop.globalmarket.data.repository.ProductRepository
+import com.shop.globalmarket.ui.wishlist.WishlistViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -47,11 +51,14 @@ fun ProductDetailScreen(
     productId: String,
     onBack: () -> Unit,
     onAddToCart: (Product) -> Unit,
-    onChatWithSeller: (String, String) -> Unit,
-    viewModel: ProductDetailViewModel = viewModel()
+    onChatWithSeller: (String, String, String, String) -> Unit,
+    viewModel: ProductDetailViewModel = viewModel(),
+    wishlistViewModel: WishlistViewModel = viewModel()
 ) {
     val product by viewModel.product.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val wishlistItems by wishlistViewModel.wishlistItems.collectAsState()
+    val isWishlisted = product?.let { p -> wishlistItems.any { it.id == p.id } } ?: false
 
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
@@ -68,7 +75,14 @@ fun ProductDetailScreen(
                 },
                 actions = {
                     product?.let { p ->
-                        IconButton(onClick = { onChatWithSeller(p.sellerId, "Seller of ${p.name}") }) {
+                        IconButton(onClick = { wishlistViewModel.toggleWishlist(p) }) {
+                            Icon(
+                                imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Toggle Wishlist",
+                                tint = if (isWishlisted) Color.Red else LocalContentColor.current
+                            )
+                        }
+                        IconButton(onClick = { onChatWithSeller(p.sellerId, "Seller of ${p.name}", p.id, p.name) }) {
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Chat with Seller")
                         }
                     }
@@ -112,18 +126,41 @@ fun ProductDetailScreen(
                     )
 
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = p.name,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = p.name,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                         
-                        Text(
-                            text = p.formattedPrice,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = p.formattedPrice,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                            if (p.discountPercentage > 0) {
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = p.formattedDiscountedPrice,
+                                    style = MaterialTheme.typography.bodyMedium.copy(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough),
+                                    color = Color.Gray
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Badge(containerColor = Color.Red, contentColor = Color.White) {
+                                    Text("-${p.discountPercentage.toInt()}%")
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(8.dp))
 
                         Text(
                             text = "Category: ${p.category}",
@@ -147,11 +184,39 @@ fun ProductDetailScreen(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "Rating: ⭐ ${p.rating}")
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "(${p.reviewCount} Reviews)")
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(text = "Rating: ⭐ ${p.rating}", fontWeight = FontWeight.Bold)
+                                    Text(text = "Based on ${p.reviewCount} reviews", style = MaterialTheme.typography.labelSmall)
+                                }
+                                TextButton(onClick = { /* Navigate to reviews */ }) {
+                                    Text("View All")
+                                }
+                            }
                         }
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Text(
+                            text = "Delivery Information",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Standard delivery within 3-5 business days. Returns accepted within 7 days of delivery.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
             } else {

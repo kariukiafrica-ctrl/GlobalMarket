@@ -1,7 +1,5 @@
 package com.shop.globalmarket.data.model
 
-import java.util.Date
-
 data class Order(
     val id: String = "",
     val buyerId: String = "",
@@ -9,7 +7,10 @@ data class Order(
     val totalAmount: Double = 0.0,
     val status: OrderStatus = OrderStatus.PENDING,
     val timestamp: Long = System.currentTimeMillis(),
-    val paymentMethod: String = "Mpesa"
+    val paymentMethod: String = "Mpesa",
+    val phoneNumber: String = "",
+    val deliveryAddress: String = "",
+    val deliveryCity: String = ""
 )
 
 enum class OrderStatus {
@@ -21,5 +22,6 @@ data class CartItem(
     val productName: String = "",
     val productPrice: Double = 0.0,
     val quantity: Int = 1,
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val sellerId: String = ""
 )

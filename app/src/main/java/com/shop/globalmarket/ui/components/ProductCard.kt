@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +24,9 @@ import com.shop.globalmarket.data.model.Product
 fun ProductCard(
     product: Product,
     onClick: () -> Unit,
-    onAddToCart: () -> Unit
+    onAddToCart: (() -> Unit)? = null,
+    isWishlisted: Boolean = false,
+    onWishlistToggle: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -45,23 +49,41 @@ fun ProductCard(
                     contentScale = ContentScale.Crop
                 )
                 
+                // Wishlist Button
+                if (onWishlistToggle != null) {
+                    IconButton(
+                        onClick = onWishlistToggle,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Wishlist",
+                            tint = if (isWishlisted) Color.Red else Color.White
+                        )
+                    }
+                }
+
                 // Add to Cart Button overlay
-                FilledIconButton(
-                    onClick = onAddToCart,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp)
-                        .size(36.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.AddShoppingCart,
-                        contentDescription = "Add to Cart",
-                        modifier = Modifier.size(18.dp),
-                        tint = Color.White
-                    )
+                if (onAddToCart != null) {
+                    FilledIconButton(
+                        onClick = onAddToCart,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                            .size(36.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.AddShoppingCart,
+                            contentDescription = "Add to Cart",
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
             

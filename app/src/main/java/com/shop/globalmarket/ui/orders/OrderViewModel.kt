@@ -27,8 +27,15 @@ class OrderViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             _isLoading.value = true
-            _orders.value = repository.getOrdersByBuyer(userId)
+            _orders.value = repository.getOrdersByBuyer(userId).sortedByDescending { it.timestamp }
             _isLoading.value = false
+        }
+    }
+
+    fun cancelOrder(orderId: String) {
+        viewModelScope.launch {
+            repository.cancelOrder(orderId)
+            fetchOrders() // Refresh list
         }
     }
 }

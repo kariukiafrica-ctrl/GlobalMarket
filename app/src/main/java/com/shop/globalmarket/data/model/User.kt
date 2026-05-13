@@ -6,7 +6,8 @@ data class User(
     val email: String = "",
     val profilePicture: String = "",
     val userType: UserType = UserType.BUYER,
-    val phoneNumber: String = ""
+    val phoneNumber: String = "",
+    val isApprovedSeller: Boolean = false // Admin approval for sellers
 )
 
 enum class UserType {

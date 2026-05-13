@@ -23,15 +23,30 @@ class OrderRepository {
     }
 
     suspend fun getOrdersBySeller(sellerId: String): List<Order> {
-        // In a real app, orders might be split or filtered differently
-        // For simplicity, we'll assume a seller can see all orders they have products in
-        // or we filter at the application level if using a flat list
         return try {
             val snapshot = database.get().await()
-            snapshot.children.mapNotNull { it.getValue(Order::class.java) }
-                .filter { order -> order.products.any { it.productId != "" } } // Logic would be more complex
+            val allOrders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
+            if (sellerId.isEmpty()) {
+                allOrders
+            } else {
+                allOrders.filter { order -> 
+                    order.products.any { it.sellerId == sellerId } 
+                }
+            }
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    suspend fun updateOrderStatus(orderId: String, status: String) {
+        try {
+            database.child(orderId).child("status").setValue(status).await()
+        } catch (e: Exception) {
+            // Handle error
+        }
+    }
+
+    suspend fun cancelOrder(orderId: String) {
+        updateOrderStatus(orderId, "CANCELLED")
     }
 }

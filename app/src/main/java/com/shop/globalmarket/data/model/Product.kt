@@ -11,7 +11,9 @@ data class Product(
     val rating: Float = 0f,
     val reviewCount: Int = 0,
     val stock: Int = 0,
-    val discountPercentage: Double = 0.0
+    val discountPercentage: Double = 0.0,
+    val isNegotiable: Boolean = true,
+    val isApproved: Boolean = false // Admin moderation flag
 ) {
     val formattedPrice: String
         get() = "Ksh ${String.format("%,.0f", price)}"
