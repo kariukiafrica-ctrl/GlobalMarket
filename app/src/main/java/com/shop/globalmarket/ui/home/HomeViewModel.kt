@@ -19,11 +19,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    val products: StateFlow<List<Product>> = combine(_products, _searchQuery) { products, query ->
-        if (query.isBlank()) {
-            products
-        } else {
-            products.filter { it.name.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
+    private val _selectedCategory = MutableStateFlow("All")
+    val selectedCategory: StateFlow<String> = _selectedCategory
+
+    val categories = listOf("All", "Electronics", "Fashion", "Home & Kitchen", "Computing", "Accessories", "Sports", "Beauty", "Food & Drinks")
+
+    val products: StateFlow<List<Product>> = combine(_products, _searchQuery, _selectedCategory) { products, query, category ->
+        products.filter { product ->
+            val matchesQuery = product.name.contains(query, ignoreCase = true) || 
+                               product.category.contains(query, ignoreCase = true)
+            val matchesCategory = category == "All" || product.category == category
+            matchesQuery && matchesCategory
         }
     }.let { 
         val state = MutableStateFlow<List<Product>>(emptyList())
@@ -57,6 +63,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onCategorySelected(category: String) {
+        _selectedCategory.value = category
     }
 
     fun onProductViewed(category: String) {

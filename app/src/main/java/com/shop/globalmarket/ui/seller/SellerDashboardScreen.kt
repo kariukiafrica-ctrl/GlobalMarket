@@ -77,10 +77,17 @@ fun SellerDashboardScreen(
                     }
                 } else {
                     items(myProducts.chunked(2)) { rowProducts ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             rowProducts.forEach { product ->
                                 Box(modifier = Modifier.weight(1f)) {
-                                    ProductCard(product = product, onClick = { /* Edit Product */ })
+                                    ProductCard(
+                                        product = product,
+                                        onClick = { /* Edit Product logic */ },
+                                        onAddToCart = { /* Disabled for seller view */ }
+                                    )
                                 }
                             }
                             if (rowProducts.size == 1) {
