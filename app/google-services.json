@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "705796736037",
+    "firebase_url": "https://globalmarket-415d0-default-rtdb.firebaseio.com",
+    "project_id": "globalmarket-415d0",
+    "storage_bucket": "globalmarket-415d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705796736037:android:4f3d4aa54b56342d426bcc",
+        "android_client_info": {
+          "package_name": "com.shop.globalmarket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAgNV8YzZ1ANBtn4bIDRiJmeYVTDQ28-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
